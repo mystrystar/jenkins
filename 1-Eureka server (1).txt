@@ -1,0 +1,122 @@
+What is Service Oriented Architecture (SOA)
+SOA is a pattern which is designed to build distributed systems that deliver services to other applications through the protocol
+
+What is Service?
+A service is a well-defined, self-contained function that represents a unit of functionality. A service can exchange information from another service. It is not dependent on the state of another service. It uses a loosely coupled, message-based communication model to communicate with applications and other services.
+
+Service provider - It is a software entity that implements a service specification.
+Service consumer - It can be called as a requestor or client that calls a service provider. A service consumer can be another service or an end-user application.
+Service locator - It is a service provider that acts as a registry. It is responsible for examining service provider interfaces and service locations.
+--service discoverfile
+Service broker - It is a service provider that pass service requests to one or more additional service providers.
+
+------------------------------------------
+What is Eureka Server?
+Eureka Server is service discovery for your microservices, where all client applications can register by themselves and other microservices look up the Eureka Server to get independent microservices to get the job complete.
+
+Eureka Server is also known as Discovery Server and it contains all the information about client microservices running on which IP address and port.
+
+-----------------------------
+part 1:How to create a Eureka server.
+
+Dependencies required:
+Web,Eureka Server,Actuator,dev-tools
+	<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+		</dependency>
+
+
+--app.properties
+
+server.port=8761
+spring.application.name=eureka-server
+eureka.client.fetch-registry=false
+eureka.client.register-with-eureka=false
+#eureka.server.renewal-percent-threshold=0.49
+
+--Main class
+@SpringBootApplication
+@EnableEurekaServer
+public class ServiceDiscoveryApplication {
+-----------------------------------
+How to create a client application
+Dependency required in client app.
+spring-cloud-starter-netflix-eureka-client,devtools,web,actuator
+		
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+
+
+--app.properties
+spring.application.name=customer-service
+server.port=2222
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+
+#eureka.client.serviceUrl.healthcheck.enabled=true
+
+--the below two properties are not req with higher spring versions
+eureka.client.register-with-eureka=true
+eureka.client.fetchRegistry=true
+
+
+--Main class
+@EnableDiscoveryClient
+@SpringBootApplication
+public class CustomerServiceApplication {
+
+--Create a CustomerController
+package com.myapp.customerservice;
+
+@RestController
+public class CustomerController {
+
+	@GetMapping("/names")
+	public List<String> getAllCustomers(){
+		return Arrays.asList("Ram","Rahim","David","Jack");
+	}
+		
+}
+--------------------------------------------
+==> create one more client Application 
+product-service
+
+--same as above
+
+==> create a Controller class
+@RestController
+public class ProductController {
+
+	@GetMapping("/names")
+	public List<String> getAllProducts(){
+		return Arrays.asList("Mobile","Router","camera","usb");
+	}
+}
+--------------------------------------------
+--app.properties
+spring.application.name=product-service
+server.port=5555
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+--the below two properties are not req with higher spring versions
+eureka.client.register-with-eureka=true
+eureka.client.fetchRegistry=true
+
+--------------------------------
+==>Add a static web page  ,index.html in static folder
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h1> Welcome to product service</h1>
+</body>
+</html>
+
+----------------------------------------------
+Demo steps:
+https://dzone.com/articles/spring-cloud-amp-spring-bootimplementing-eureka-se
